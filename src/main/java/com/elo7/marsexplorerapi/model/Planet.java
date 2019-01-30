@@ -9,28 +9,17 @@ public class Planet {
     private Integer sizeY;
     private List<AxisPosition> positions;
     private List<AxisPosition> exploredPositions;
+    private Double exploredPercentage;
     private List<Probe> probesLanded;
-
-    public Planet(Integer sizeX, Integer sizeY, List<Probe> probesLanded) {
-
-        this.sizeX = sizeY;
-        this.sizeY = sizeY;
-        this.positions = new ArrayList<>();
-        this.exploredPositions = new ArrayList<>();
-        this.probesLanded = probesLanded;
-
-        for (Probe probe : probesLanded) {
-            exploredPositions.add(probe.getPosition());
-        }
-    }
 
     public Planet(Integer sizeX, Integer sizeY) {
 
-        this.sizeX = sizeY;
+        this.sizeX = sizeX;
         this.sizeY = sizeY;
         this.positions = new ArrayList<>();
         this.exploredPositions = new ArrayList<>();
         this.probesLanded = new ArrayList<>();
+        this.exploredPercentage = 0.0;
 
         for (int posY = 0; posY < sizeY; posY++) {
             for (int posX = 0; posX < sizeX; posX++) {
@@ -44,35 +33,29 @@ public class Planet {
         return positions;
     }
 
-    public Integer getSizeX() {
-        return sizeX;
-    }
-
-    public Integer getSizeY() {
-        return sizeY;
-    }
-
-    public List<AxisPosition> getExploredPositions() {
-        return exploredPositions;
-    }
-
-    public List<Probe> getProbesLanded() {
-        return probesLanded;
-    }
-
-    public void setProbesLanded(List<Probe> probesLanded) {
-        this.probesLanded = probesLanded;
+    private void updateExploredPositions(){
 
         for (Probe probe : probesLanded) {
             exploredPositions.add(probe.getPosition());
         }
 
-        draw();
+        exploredPercentage = ((double) exploredPositions.size() / (double) positions.size()) * 100;
+
     }
 
-    public void draw() {
+    public void setProbesLanded(List<Probe> probesLanded) {
+
+        this.probesLanded = probesLanded;
+
+        updateExploredPositions();
+
+        drawSurface();
+    }
+
+    public void drawSurface() {
 
         System.out.println("");
+        System.out.println("Explored surface: " + exploredPercentage + "%");
 
         for (Integer posY = sizeX - 1; posY > -1; posY--) {
 

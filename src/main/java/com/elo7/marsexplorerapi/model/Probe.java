@@ -24,7 +24,7 @@ public class Probe {
         return id;
     }
 
-    public void move(){
+    public void move() {
 
         Integer newPosX = position.getPosX();
         Integer newPosY = position.getPosY();
@@ -46,59 +46,52 @@ public class Probe {
 
         AxisPosition newPosition = new AxisPosition(newPosX, newPosY);
 
-        System.out.println("Move... posX: " + newPosX + " posY: " + newPosY);
+        System.out.println("Moving probe... new position: posX: " + newPosX + " posY: " + newPosY);
 
         this.position = newPosition;
 
     }
 
-    public void spinRight(){
+    public void spin(ProbeCommand probeCommand) {
 
-        CardinalDirection newDirection = direction;
+        if (probeCommand.equals(ProbeCommand.Right)) {
 
-        switch (direction) {
-            case N:
-                newDirection = CardinalDirection.E;
-                break;
-            case E:
-                newDirection = CardinalDirection.S;
-                break;
-            case S:
-                newDirection = CardinalDirection.W;
-                break;
-            case W:
-                newDirection = CardinalDirection.N;
-                break;
+            switch (direction) {
+                case N:
+                    direction = CardinalDirection.E;
+                    break;
+                case E:
+                    direction = CardinalDirection.S;
+                    break;
+                case S:
+                    direction = CardinalDirection.W;
+                    break;
+                case W:
+                    direction = CardinalDirection.N;
+                    break;
+            }
+
+            System.out.println("Turn probe left... new direction: " + direction);
         }
 
-        System.out.println("Turn probe right... new direction: " + newDirection);
+        if (probeCommand.equals(ProbeCommand.Left)) {
 
-        direction = newDirection;
+            switch (direction) {
+                case N:
+                    direction = CardinalDirection.W;
+                    break;
+                case E:
+                    direction = CardinalDirection.N;
+                    break;
+                case S:
+                    direction = CardinalDirection.E;
+                    break;
+                case W:
+                    direction = CardinalDirection.S;
+                    break;
+            }
 
-    };
-
-    public void spinLeft(){
-
-        CardinalDirection newDirection = direction;
-
-        switch (direction) {
-            case N:
-                newDirection = CardinalDirection.W;
-                break;
-            case E:
-                newDirection = CardinalDirection.N;
-                break;
-            case S:
-                newDirection = CardinalDirection.E;
-                break;
-            case W:
-                newDirection = CardinalDirection.S;
-                break;
+            System.out.println("Turn probe right... new direction: " + direction);
         }
-
-        System.out.println("Turn probe left... new direction: " + newDirection);
-
-        direction = newDirection;
-
-    };
+    }
 }

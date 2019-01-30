@@ -2,6 +2,7 @@ package com.elo7.marsexplorerapi.repository;
 
 import com.elo7.marsexplorerapi.model.Planet;
 import com.elo7.marsexplorerapi.model.Probe;
+import com.elo7.marsexplorerapi.model.ProbeCommand;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.ArrayList;
@@ -27,6 +28,21 @@ public class ProbeRepository {
                 .filter(probe -> probe.getId() == id).findFirst();
 
         return currentProbe;
+    }
+
+    public static void save(Probe probe, ProbeCommand probeCommand) {
+        ProbeRepository.probesLanded.remove(probe);
+
+        if (!probeCommand.equals(ProbeCommand.Move)) {
+            probe.spin(probeCommand);
+        }
+
+        if (probeCommand.equals(ProbeCommand.Move)) {
+            probe.move();
+        }
+
+        ProbeRepository.probesLanded.add(probe);
+        PlanetRepository.mars.setProbesLanded(ProbeRepository.probesLanded);
     }
 
 }
