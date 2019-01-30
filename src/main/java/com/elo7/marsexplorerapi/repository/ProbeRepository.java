@@ -17,7 +17,6 @@ public class ProbeRepository {
         Integer id = ProbeRepository.probesLanded.size() + 1;
         Probe _newProbe = new Probe(id, newProbe.getDirection(), newProbe.getPosition());
         ProbeRepository.probesLanded.add(_newProbe);
-        PlanetRepository.mars = new Planet(5, 5, ProbeRepository.probesLanded);
         return _newProbe;
 
     }

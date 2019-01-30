@@ -19,6 +19,9 @@ public class Planet {
         this.exploredPositions = new ArrayList<>();
         this.probesLanded = probesLanded;
 
+        for (Probe probe : probesLanded) {
+            exploredPositions.add(probe.getPosition());
+        }
     }
 
     public Planet(Integer sizeX, Integer sizeY) {
@@ -49,27 +52,47 @@ public class Planet {
         return sizeY;
     }
 
+    public List<AxisPosition> getExploredPositions() {
+        return exploredPositions;
+    }
+
+    public List<Probe> getProbesLanded() {
+        return probesLanded;
+    }
+
+    public void setProbesLanded(List<Probe> probesLanded) {
+        this.probesLanded = probesLanded;
+
+        for (Probe probe : probesLanded) {
+            exploredPositions.add(probe.getPosition());
+        }
+
+        draw();
+    }
+
     public void draw() {
 
-        for (int posY = 0; posY < this.getSizeY(); posY++) {
+        System.out.println("");
+
+        for (Integer posY = sizeX - 1; posY > -1; posY--) {
 
             StringBuilder marsSurfaceLine = new StringBuilder();
 
-            for (int posX = 0; posX < this.getSizeX(); posX++) {
+            for (Integer posX = 0; posX < sizeX; posX++) {
 
-                String positionDraw = "===";
+                String positionDraw = "====";
                 AxisPosition currentPosition = new AxisPosition(posX, posY);
 
-                if (this.exploredPositions.contains(currentPosition)) {
-                    positionDraw = "XXX";
+                if (exploredPositions.contains(currentPosition)) {
+                    positionDraw = "XXXX";
                 }
 
-//                for (Probe probeOnSoil : probesOnSoil) {
-//                    if (currentPosition.equals(probeOnSoil.getPosition())) {
-//                        positionDraw = probeOnSoil.getId() + probeOnSoil.getDirection();
-//                        continue;
-//                    }
-//                }
+                for (Probe probeOnSoil : probesLanded) {
+                    if (currentPosition.equals(probeOnSoil.getPosition())) {
+                        positionDraw = "P" + String.format("%02d", probeOnSoil.getId()) + probeOnSoil.getDirection();
+                        continue;
+                    }
+                }
 
                 marsSurfaceLine.append(positionDraw);
             }

@@ -7,6 +7,4 @@ public class PlanetRepository {
 
     public static Planet mars = new Planet(5, 5);
 
-
-
 }

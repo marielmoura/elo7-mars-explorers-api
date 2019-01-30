@@ -1,22 +1,15 @@
 package com.elo7.marsexplorerapi.controller;
 
-import com.elo7.marsexplorerapi.model.AxisPosition;
-import com.elo7.marsexplorerapi.model.Planet;
 import com.elo7.marsexplorerapi.model.Probe;
 import com.elo7.marsexplorerapi.repository.PlanetRepository;
 import com.elo7.marsexplorerapi.repository.ProbeRepository;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.HttpClientErrorException;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 public class ProbeController {
-
-
-//    static Planet mars = new Planet(5, 5, null);
 
     @GetMapping("/api/probes")
     public List<Probe> doGet() {
@@ -29,8 +22,9 @@ public class ProbeController {
     public Probe doPost(@RequestBody Probe newProbe) {
 
         Probe _newProbe = ProbeRepository.add(newProbe);
-
+        PlanetRepository.mars.setProbesLanded(ProbeRepository.probesLanded);
         return _newProbe;
+
     }
 
     @PutMapping("/api/probes/{id}/spin/right")
@@ -44,6 +38,7 @@ public class ProbeController {
             ProbeRepository.probesLanded.remove(_probeToSpin);
             _probeToSpin.spinRight();
             ProbeRepository.probesLanded.add(_probeToSpin);
+            PlanetRepository.mars.setProbesLanded(ProbeRepository.probesLanded);
         }
 
         return ProbeRepository.probesLanded;
@@ -56,14 +51,17 @@ public class ProbeController {
 
             Optional<Probe> probeToSpin = ProbeRepository.findById(id);
 
-            Probe _probeToSpin = probeToSpin.get();
-            ProbeRepository.probesLanded.remove(_probeToSpin);
-            _probeToSpin.spinRight();
-            ProbeRepository.probesLanded.add(_probeToSpin);
+            if (probeToSpin.isPresent()) {
+                Probe _probeToSpin = probeToSpin.get();
+                ProbeRepository.probesLanded.remove(_probeToSpin);
+                _probeToSpin.spinLeft();
+                ProbeRepository.probesLanded.add(_probeToSpin);
+                PlanetRepository.mars.setProbesLanded(ProbeRepository.probesLanded);
+            }
 
             return ProbeRepository.probesLanded;
 
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             throw ex;
         }
 
@@ -80,6 +78,7 @@ public class ProbeController {
             ProbeRepository.probesLanded.remove(_probeToSpin);
             _probeToSpin.move();
             ProbeRepository.probesLanded.add(_probeToSpin);
+            PlanetRepository.mars.setProbesLanded(ProbeRepository.probesLanded);
         }
 
         return ProbeRepository.probesLanded;
