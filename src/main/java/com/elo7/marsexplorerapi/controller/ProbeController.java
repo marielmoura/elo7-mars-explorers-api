@@ -15,7 +15,7 @@ public class ProbeController {
     @GetMapping("/api/probes")
     public List<Probe> doGet() {
 
-        return ProbeRepository.probesLanded;
+        return ProbeRepository.landedProbes;
 
     }
 
@@ -23,7 +23,7 @@ public class ProbeController {
     public Probe doPost(@RequestBody Probe newProbe) {
 
         Probe _newProbe = ProbeRepository.add(newProbe);
-        PlanetRepository.mars.setProbesLanded(ProbeRepository.probesLanded);
+        PlanetRepository.mars.setProbesLanded(ProbeRepository.landedProbes);
         return _newProbe;
 
     }
@@ -37,7 +37,7 @@ public class ProbeController {
             ProbeRepository.save(probeToSpin.get(), ProbeCommand.Right);
         }
 
-        return ProbeRepository.probesLanded;
+        return ProbeRepository.landedProbes;
     }
 
     @PutMapping("/api/probes/{id}/spin/left")
@@ -51,7 +51,7 @@ public class ProbeController {
                 ProbeRepository.save(probeToSpin.get(), ProbeCommand.Left);
             }
 
-            return ProbeRepository.probesLanded;
+            return ProbeRepository.landedProbes;
 
         } catch (Exception ex) {
             throw ex;
@@ -68,7 +68,7 @@ public class ProbeController {
             ProbeRepository.save(probeToSpin.get(), ProbeCommand.Move);
         }
 
-        return ProbeRepository.probesLanded;
+        return ProbeRepository.landedProbes;
     }
 
 }

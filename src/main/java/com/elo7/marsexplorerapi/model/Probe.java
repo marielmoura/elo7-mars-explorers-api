@@ -1,5 +1,7 @@
 package com.elo7.marsexplorerapi.model;
 
+import java.util.List;
+
 public class Probe {
 
     private Integer id;
@@ -24,7 +26,7 @@ public class Probe {
         return id;
     }
 
-    public void move() {
+    public void move(List<Probe> landedProbes) {
 
         Integer newPosX = position.getPosX();
         Integer newPosY = position.getPosY();
@@ -46,10 +48,18 @@ public class Probe {
 
         AxisPosition newPosition = new AxisPosition(newPosX, newPosY);
 
-        System.out.println("Moving probe... new position: posX: " + newPosX + " posY: " + newPosY);
+        boolean isPositionBusy = false;
 
+        for (Probe landedProbe : landedProbes) {
+            isPositionBusy = landedProbe.position.equals(newPosition);
+            if (isPositionBusy) {
+                System.out.println("[WARNING] Probe P" + landedProbe.getId() + " is already in this position: posX: " + newPosX + " posY: " + newPosY);
+                return;
+            }
+        }
+
+        System.out.println("Moving probe P" + id + " to new position: posX: " + newPosX + " posY: " + newPosY);
         this.position = newPosition;
-
     }
 
     public void spin(ProbeCommand probeCommand) {
@@ -71,7 +81,7 @@ public class Probe {
                     break;
             }
 
-            System.out.println("Turn probe left... new direction: " + direction);
+            System.out.println("Turn probe P" + id + " left... new direction: " + direction);
         }
 
         if (probeCommand.equals(ProbeCommand.Left)) {
@@ -91,7 +101,7 @@ public class Probe {
                     break;
             }
 
-            System.out.println("Turn probe right... new direction: " + direction);
+            System.out.println("Turn probe P" + id + " right... new direction: " + direction);
         }
     }
 }
