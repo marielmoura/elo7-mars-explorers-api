@@ -14,19 +14,18 @@ public class ProbeRepository {
 
     public static String add(Probe newProbe) {
 
-        Integer id = landedProbes.size() + 1;
+        AxisPosition landingPosition = newProbe.getPosition();
 
-        AxisPosition positionToLand = newProbe.getPosition();
-
-        if (!PlanetRepository.mars.isPositionInAreaRange(positionToLand)) {
+        if (!PlanetRepository.mars.isPositionInAreaRange(landingPosition)) {
             return "Landing position out of area range!";
         }
 
-        if (PlanetRepository.mars.isPositionExplored(positionToLand)) {
-            positionToLand = PlanetRepository.mars.nextFreePosition();
+        if (PlanetRepository.mars.isPositionExplored(landingPosition)) {
+            landingPosition = PlanetRepository.mars.nextFreePosition();
         }
 
-        Probe _newProbe = new Probe(id, newProbe.getDirection(), positionToLand);
+        Integer id = landedProbes.size() + 1;
+        Probe _newProbe = new Probe(id, newProbe.getDirection(), landingPosition);
         landedProbes.add(_newProbe);
         PlanetRepository.mars.setProbesLanded(landedProbes);
 

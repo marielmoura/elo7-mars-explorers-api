@@ -22,9 +22,7 @@ public class ProbeController {
     @PostMapping("/api/probes")
     public String doPost(@RequestBody Probe newProbe) {
 
-        String statusMessage = ProbeRepository.add(newProbe);
-        PlanetRepository.mars.setProbesLanded(ProbeRepository.landedProbes);
-        return statusMessage;
+        return ProbeRepository.add(newProbe);
 
     }
 
