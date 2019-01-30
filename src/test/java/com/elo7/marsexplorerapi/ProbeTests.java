@@ -13,14 +13,11 @@ public class ProbeTests {
     public void avoidCollisionTest_02S_01S() {
         Probe newProbe11 = new Probe(1, CardinalDirection.S, new AxisPosition(0, 2));
         Probe newProbe12 = new Probe(2, CardinalDirection.N, new AxisPosition(0, 0));
-
         List<Probe> landedProbes = new ArrayList<>();
         landedProbes.add(newProbe11);
         landedProbes.add(newProbe12);
-
         newProbe11.move(landedProbes);
         newProbe11.move(landedProbes);
-
         Assert.assertEquals(newProbe11.getPosition(), new AxisPosition(0, 1));
     }
 

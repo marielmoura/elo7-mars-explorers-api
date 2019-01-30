@@ -9,6 +9,7 @@ public class Planet {
     private Integer sizeY;
     private List<AxisPosition> positions;
     private List<AxisPosition> exploredPositions;
+    private List<AxisPosition> unexploredPositions;
     private Double exploredPercentage;
     private List<Probe> probesLanded;
 
@@ -18,6 +19,7 @@ public class Planet {
         this.sizeY = sizeY;
         this.positions = new ArrayList<>();
         this.exploredPositions = new ArrayList<>();
+        this.unexploredPositions = new ArrayList<>();
         this.probesLanded = new ArrayList<>();
         this.exploredPercentage = 0.0;
 
@@ -25,6 +27,7 @@ public class Planet {
             for (int posX = 0; posX < sizeX; posX++) {
                 AxisPosition planetPosition = new AxisPosition(posX, posY);
                 positions.add(planetPosition);
+                unexploredPositions.add(planetPosition);
             }
         }
     }
@@ -33,23 +36,41 @@ public class Planet {
         return positions;
     }
 
-    private void updateExploredPositions(){
+    public boolean isPositionInAreaRange(AxisPosition position) {
+        return positions.contains(position);
+    }
+
+    public boolean isPositionExplored(AxisPosition position) {
+        return exploredPositions.contains(position);
+    }
+
+    public AxisPosition nextFreePosition() {
+
+        AxisPosition unexploredPosition = new AxisPosition(0, 0);
+
+        if (unexploredPositions.size() > 0)
+            unexploredPosition = unexploredPositions.stream().findFirst().get();
+
+        return unexploredPosition;
+    }
+
+    private void updateExploredPositions() {
 
         for (Probe probe : probesLanded) {
-            exploredPositions.add(probe.getPosition());
+            if (!exploredPositions.contains(probe.getPosition()))
+                exploredPositions.add(probe.getPosition());
         }
 
         exploredPercentage = ((double) exploredPositions.size() / (double) positions.size()) * 100;
-
+        unexploredPositions.removeAll(exploredPositions);
     }
 
     public void setProbesLanded(List<Probe> probesLanded) {
 
         this.probesLanded = probesLanded;
-
         updateExploredPositions();
-
         drawSurface();
+
     }
 
     public void drawSurface() {

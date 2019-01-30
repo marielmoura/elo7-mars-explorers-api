@@ -1,5 +1,6 @@
 package com.elo7.marsexplorerapi.repository;
 
+import com.elo7.marsexplorerapi.model.AxisPosition;
 import com.elo7.marsexplorerapi.model.Probe;
 import com.elo7.marsexplorerapi.model.ProbeCommand;
 
@@ -11,13 +12,25 @@ public class ProbeRepository {
 
     public static List<Probe> landedProbes = new ArrayList<>();
 
-    public static Probe add(Probe newProbe) {
+    public static String add(Probe newProbe) {
 
         Integer id = landedProbes.size() + 1;
-        Probe _newProbe = new Probe(id, newProbe.getDirection(), newProbe.getPosition());
-        landedProbes.add(_newProbe);
-        return _newProbe;
 
+        AxisPosition positionToLand = newProbe.getPosition();
+
+        if (!PlanetRepository.mars.isPositionInAreaRange(positionToLand)) {
+            return "Landing position out of area range!";
+        }
+
+        if (PlanetRepository.mars.isPositionExplored(positionToLand)) {
+            positionToLand = PlanetRepository.mars.nextFreePosition();
+        }
+
+        Probe _newProbe = new Probe(id, newProbe.getDirection(), positionToLand);
+        landedProbes.add(_newProbe);
+        PlanetRepository.mars.setProbesLanded(landedProbes);
+
+        return "Probe P" + _newProbe.getId() + " landed successfully!";
     }
 
     public static Optional<Probe> findById(Integer id) {
