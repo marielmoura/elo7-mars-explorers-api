@@ -1,24 +1,28 @@
 package com.elo7.marsexplorerapi.model;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.List;
 
 public class Probe {
 
     private Integer id;
-    private CardinalDirection direction;
-    private AxisPosition position;
+    private Direction direction;
+    private Position position;
+    Logger logger = LogManager.getLogger(this);
 
-    public Probe(Integer id, CardinalDirection direction, AxisPosition position) {
+    public Probe(Integer id, Direction direction, Position position) {
         this.id = id;
         this.direction = direction;
         this.position = position;
     }
 
-    public CardinalDirection getDirection() {
+    public Direction getDirection() {
         return direction;
     }
 
-    public AxisPosition getPosition() {
+    public Position getPosition() {
         return position;
     }
 
@@ -28,8 +32,8 @@ public class Probe {
 
     public void move(List<Probe> landedProbes) {
 
-        Integer newPosX = position.getPosX();
-        Integer newPosY = position.getPosY();
+        Integer newPosX = position.getX();
+        Integer newPosY = position.getY();
 
         switch (direction) {
             case S:
@@ -46,62 +50,64 @@ public class Probe {
                 break;
         }
 
-        AxisPosition newPosition = new AxisPosition(newPosX, newPosY);
+        Position newPosition = new Position(newPosX, newPosY);
 
         boolean isPositionBusy = false;
 
-        for (Probe landedProbe : landedProbes) {
-            isPositionBusy = landedProbe.position.equals(newPosition);
-            if (isPositionBusy) {
-                System.out.println("[WARNING] Probe P" + landedProbe.getId() + " is already in this position: posX: " + newPosX + " posY: " + newPosY);
-                return;
+        if (landedProbes != null) {
+            for (Probe landedProbe : landedProbes) {
+                isPositionBusy = landedProbe.position.equals(newPosition);
+                if (isPositionBusy) {
+                    logger.info("[WARNING] Probe P" + landedProbe.getId() + " is already in this position: posX: " + newPosX + " posY: " + newPosY);
+                    return;
+                }
             }
         }
 
-        System.out.println("Moving probe P" + id + " to new position: posX: " + newPosX + " posY: " + newPosY);
+        logger.info("Moving probe P" + id + " to new position: posX: " + newPosX + " posY: " + newPosY);
         this.position = newPosition;
     }
 
     public void spin(ProbeCommand probeCommand) {
 
-        if (probeCommand.equals(ProbeCommand.Right)) {
+        if (probeCommand.equals(ProbeCommand.RIGHT)) {
 
             switch (direction) {
                 case N:
-                    direction = CardinalDirection.E;
+                    direction = Direction.E;
                     break;
                 case E:
-                    direction = CardinalDirection.S;
+                    direction = Direction.S;
                     break;
                 case S:
-                    direction = CardinalDirection.W;
+                    direction = Direction.W;
                     break;
                 case W:
-                    direction = CardinalDirection.N;
+                    direction = Direction.N;
                     break;
             }
 
-            System.out.println("Turn probe P" + id + " left... new direction: " + direction);
+            logger.info("Turn probe P" + id + " left... new direction: " + direction);
         }
 
-        if (probeCommand.equals(ProbeCommand.Left)) {
+        if (probeCommand.equals(ProbeCommand.LEFT)) {
 
             switch (direction) {
                 case N:
-                    direction = CardinalDirection.W;
+                    direction = Direction.W;
                     break;
                 case E:
-                    direction = CardinalDirection.N;
+                    direction = Direction.N;
                     break;
                 case S:
-                    direction = CardinalDirection.E;
+                    direction = Direction.E;
                     break;
                 case W:
-                    direction = CardinalDirection.S;
+                    direction = Direction.S;
                     break;
             }
 
-            System.out.println("Turn probe P" + id + " right... new direction: " + direction);
+            logger.info("Turn probe P" + id + " right... new direction: " + direction);
         }
     }
 }

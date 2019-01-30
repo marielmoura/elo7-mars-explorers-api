@@ -1,55 +1,55 @@
 package com.elo7.marsexplorerapi.controller;
 
+import com.elo7.marsexplorerapi.model.Planet;
 import com.elo7.marsexplorerapi.model.Probe;
 import com.elo7.marsexplorerapi.model.ProbeCommand;
-import com.elo7.marsexplorerapi.repository.PlanetRepository;
-import com.elo7.marsexplorerapi.repository.ProbeRepository;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
 
 @RestController
+@RequestMapping("/api/probes")
 public class ProbeController {
 
-    @GetMapping("/api/probes")
-    public List<Probe> doGet() {
+    @GetMapping()
+    public List<Probe> get() {
 
-        return ProbeRepository.landedProbes;
-
-    }
-
-    @PostMapping("/api/probes")
-    public String doPost(@RequestBody Probe newProbe) {
-
-        return ProbeRepository.add(newProbe);
+        return Planet.mars.getLandedProbes();
 
     }
 
-    @PutMapping("/api/probes/{id}/spin/right")
-    public List<Probe> doPutSpinRight(@PathVariable("id") Integer id) {
+    @PostMapping()
+    public String post(@RequestBody Probe newProbe) {
 
-        Optional<Probe> probeToSpin = ProbeRepository.findById(id);
+        return Planet.mars.addProbe(newProbe);
+
+    }
+
+    @PutMapping("/{id}/spin/right")
+    public List<Probe> putSpinRight(@PathVariable("id") Integer id) {
+
+        Optional<Probe> probeToSpin = Planet.mars.findProbeById(id);
 
         if (probeToSpin.isPresent()) {
-            ProbeRepository.save(probeToSpin.get(), ProbeCommand.Right);
+            Planet.mars.saveProbe(probeToSpin.get(), ProbeCommand.RIGHT);
         }
 
-        return ProbeRepository.landedProbes;
+        return Planet.mars.getLandedProbes();
     }
 
-    @PutMapping("/api/probes/{id}/spin/left")
-    public List<Probe> doPutSpinLeft(@PathVariable("id") Integer id) {
+    @PutMapping("/{id}/spin/left")
+    public List<Probe> putSpinLeft(@PathVariable("id") Integer id) {
 
         try {
 
-            Optional<Probe> probeToSpin = ProbeRepository.findById(id);
+            Optional<Probe> probeToSpin = Planet.mars.findProbeById(id);
 
             if (probeToSpin.isPresent()) {
-                ProbeRepository.save(probeToSpin.get(), ProbeCommand.Left);
+                Planet.mars.saveProbe(probeToSpin.get(), ProbeCommand.LEFT);
             }
 
-            return ProbeRepository.landedProbes;
+            return Planet.mars.getLandedProbes();
 
         } catch (Exception ex) {
             throw ex;
@@ -57,16 +57,16 @@ public class ProbeController {
 
     }
 
-    @PutMapping("/api/probes/{id}/move")
-    public List<Probe> doPutMove(@PathVariable("id") Integer id) {
+    @PutMapping("/{id}/move")
+    public List<Probe> putMove(@PathVariable("id") Integer id) {
 
-        Optional<Probe> probeToSpin = ProbeRepository.findById(id);
+        Optional<Probe> probeToSpin = Planet.mars.findProbeById(id);
 
         if (probeToSpin.isPresent()) {
-            ProbeRepository.save(probeToSpin.get(), ProbeCommand.Move);
+            Planet.mars.saveProbe(probeToSpin.get(), ProbeCommand.MOVE);
         }
 
-        return ProbeRepository.landedProbes;
+        return Planet.mars.getLandedProbes();
     }
 
 }

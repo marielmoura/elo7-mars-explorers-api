@@ -1,17 +1,25 @@
 package com.elo7.marsexplorerapi.model;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class Planet {
 
+    public static Planet mars = new Planet(5, 5);
+
     private Integer sizeX;
     private Integer sizeY;
-    private List<AxisPosition> positions;
-    private List<AxisPosition> exploredPositions;
-    private List<AxisPosition> unexploredPositions;
+    private List<Position> positions;
+    private List<Position> exploredPositions;
+    private List<Position> unexploredPositions;
     private Double exploredPercentage;
-    private List<Probe> probesLanded;
+    private static List<Probe> landedProbes;
+
+    Logger logger = LogManager.getLogger(this);
 
     public Planet(Integer sizeX, Integer sizeY) {
 
@@ -20,33 +28,33 @@ public class Planet {
         this.positions = new ArrayList<>();
         this.exploredPositions = new ArrayList<>();
         this.unexploredPositions = new ArrayList<>();
-        this.probesLanded = new ArrayList<>();
+        this.landedProbes = new ArrayList<>();
         this.exploredPercentage = 0.0;
 
         for (int posY = 0; posY < sizeY; posY++) {
             for (int posX = 0; posX < sizeX; posX++) {
-                AxisPosition planetPosition = new AxisPosition(posX, posY);
+                Position planetPosition = new Position(posX, posY);
                 positions.add(planetPosition);
                 unexploredPositions.add(planetPosition);
             }
         }
     }
 
-    public List<AxisPosition> getPositions() {
+    public List<Position> getPositions() {
         return positions;
     }
 
-    public boolean isPositionInAreaRange(AxisPosition position) {
+    public boolean isPositionInAreaRange(Position position) {
         return positions.contains(position);
     }
 
-    public boolean isPositionExplored(AxisPosition position) {
+    public boolean isPositionExplored(Position position) {
         return exploredPositions.contains(position);
     }
 
-    public AxisPosition nextFreePosition() {
+    public Position nextFreePosition() {
 
-        AxisPosition unexploredPosition = new AxisPosition(0, 0);
+        Position unexploredPosition = new Position(0, 0);
 
         if (unexploredPositions.size() > 0)
             unexploredPosition = unexploredPositions.stream().findFirst().get();
@@ -56,7 +64,7 @@ public class Planet {
 
     private void updateExploredPositions() {
 
-        for (Probe probe : probesLanded) {
+        for (Probe probe : landedProbes) {
             if (!exploredPositions.contains(probe.getPosition()))
                 exploredPositions.add(probe.getPosition());
         }
@@ -65,46 +73,106 @@ public class Planet {
         unexploredPositions.removeAll(exploredPositions);
     }
 
-    public void setProbesLanded(List<Probe> probesLanded) {
+    public void setLandedProbes(List<Probe> landedProbes) {
 
-        this.probesLanded = probesLanded;
+        this.landedProbes = landedProbes;
         updateExploredPositions();
-        drawSurface();
+        toString();
 
+    }
+
+    public static String addProbe(Probe newProbe) {
+
+        Position landingPosition = newProbe.getPosition();
+
+        if (!Planet.mars.isPositionInAreaRange(landingPosition)) {
+            return "Landing position out of area range!";
+        }
+
+        if (Planet.mars.isPositionExplored(landingPosition)) {
+            landingPosition = Planet.mars.nextFreePosition();
+        }
+
+        Integer id = landedProbes.size() + 1;
+        Probe _newProbe = new Probe(id, newProbe.getDirection(), landingPosition);
+        landedProbes.add(_newProbe);
+        Planet.mars.setLandedProbes(landedProbes);
+
+        return "Probe P" + _newProbe.getId() + " landed successfully!";
+    }
+
+    public static Optional<Probe> findProbeById(Integer id) {
+
+        Optional<Probe> currentProbe = landedProbes.stream()
+                .filter(probe -> probe.getId() == id).findFirst();
+
+        return currentProbe;
+    }
+
+    public static void saveProbe(Probe probe, ProbeCommand probeCommand) {
+        landedProbes.remove(probe);
+
+        if (!probeCommand.equals(ProbeCommand.MOVE)) {
+            probe.spin(probeCommand);
+        }
+
+        if (probeCommand.equals(ProbeCommand.MOVE)) {
+            probe.move(landedProbes);
+        }
+
+        landedProbes.add(probe);
+        Planet.mars.setLandedProbes(landedProbes);
+    }
+
+    public static List<Probe> getLandedProbes() {
+        return landedProbes;
     }
 
     public void drawSurface() {
 
-        System.out.println("");
-        System.out.println("Explored surface: " + exploredPercentage + "%");
+        this.toString();
+
+//        logger.info(this.toString());
+
+    }
+
+    @Override
+    public String toString() {
+
+        logger.info("");
+        logger.info("Explored surface: " + exploredPercentage + "%");
+
+        StringBuilder marsSurface = new StringBuilder();
 
         for (Integer posY = sizeX - 1; posY > -1; posY--) {
 
-            StringBuilder marsSurfaceLine = new StringBuilder();
+            marsSurface = new StringBuilder();
 
             for (Integer posX = 0; posX < sizeX; posX++) {
 
                 String positionDraw = "====";
-                AxisPosition currentPosition = new AxisPosition(posX, posY);
+                Position currentPosition = new Position(posX, posY);
 
                 if (exploredPositions.contains(currentPosition)) {
                     positionDraw = "XXXX";
                 }
 
-                for (Probe probeOnSoil : probesLanded) {
+                for (Probe probeOnSoil : landedProbes) {
                     if (currentPosition.equals(probeOnSoil.getPosition())) {
                         positionDraw = "P" + String.format("%02d", probeOnSoil.getId()) + probeOnSoil.getDirection();
                         continue;
                     }
                 }
 
-                marsSurfaceLine.append(positionDraw);
+                marsSurface.append(positionDraw);
             }
 
-            System.out.println("Y" + posY + " " + marsSurfaceLine);
+            logger.info("Y" + posY + " " + marsSurface);
         }
 
-        System.out.println("");
+        logger.info("");
+
+        return marsSurface.toString();
     }
 
 }
