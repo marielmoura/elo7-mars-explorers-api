@@ -6,102 +6,84 @@ import org.apache.logging.log4j.Logger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class Planet {
 
-    public static Planet mars = new Planet(5, 5);
+    private static final Integer SIZE_X = 5;
+    private static final Integer SIZE_Y = 5;
+    public static final Planet mars = new Planet(SIZE_X, SIZE_Y);
 
-    private Integer sizeX;
-    private Integer sizeY;
-    private List<Position> positions;
-    private List<Position> exploredPositions;
-    private List<Position> unexploredPositions;
-    private Double exploredPercentage;
-    private static List<Probe> landedProbes;
+    private List<Position> positions = new ArrayList<>();
+    private List<Probe> landedProbes = new ArrayList<>();
 
     Logger logger = LogManager.getLogger(this);
 
     public Planet(Integer sizeX, Integer sizeY) {
 
-        this.sizeX = sizeX;
-        this.sizeY = sizeY;
-        this.positions = new ArrayList<>();
-        this.exploredPositions = new ArrayList<>();
-        this.unexploredPositions = new ArrayList<>();
-        this.landedProbes = new ArrayList<>();
-        this.exploredPercentage = 0.0;
-
         for (int posY = 0; posY < sizeY; posY++) {
             for (int posX = 0; posX < sizeX; posX++) {
                 Position planetPosition = new Position(posX, posY);
                 positions.add(planetPosition);
-                unexploredPositions.add(planetPosition);
             }
         }
-    }
 
-    public List<Position> getPositions() {
-        return positions;
     }
 
     public boolean isPositionInAreaRange(Position position) {
         return positions.contains(position);
     }
 
-    public boolean isPositionExplored(Position position) {
-        return exploredPositions.contains(position);
+    public List<Position> getBusyPositions() {
+
+        return landedProbes.stream().map(probes -> probes.getPosition())
+                .collect(Collectors.toList());
+
+    }
+
+    public List<Position> getFreePositions() {
+
+        List<Position> freePositions = ((List) ((ArrayList) positions).clone());
+        freePositions.removeAll(getBusyPositions());
+
+        return freePositions;
+    }
+
+    public boolean isPositionBusy(Position position) {
+
+        return getBusyPositions().contains(position);
     }
 
     public Position nextFreePosition() {
 
-        Position unexploredPosition = new Position(0, 0);
+        Position freePosition = new Position(0, 0);
 
-        if (unexploredPositions.size() > 0)
-            unexploredPosition = unexploredPositions.stream().findFirst().get();
+        if (getFreePositions().stream().findFirst().isPresent())
+            freePosition = getFreePositions().stream().findFirst().get();
 
-        return unexploredPosition;
+        return freePosition;
     }
 
-    private void updateExploredPositions() {
-
-        for (Probe probe : landedProbes) {
-            if (!exploredPositions.contains(probe.getPosition()))
-                exploredPositions.add(probe.getPosition());
-        }
-
-        exploredPercentage = ((double) exploredPositions.size() / (double) positions.size()) * 100;
-        unexploredPositions.removeAll(exploredPositions);
-    }
-
-    public void setLandedProbes(List<Probe> landedProbes) {
-
-        this.landedProbes = landedProbes;
-        updateExploredPositions();
-        toString();
-
-    }
-
-    public static String addProbe(Probe newProbe) {
+    public Probe landProbe(Probe newProbe) {
 
         Position landingPosition = newProbe.getPosition();
 
-        if (!Planet.mars.isPositionInAreaRange(landingPosition)) {
-            return "Landing position out of area range!";
+        if (!isPositionInAreaRange(landingPosition)) {
+            landingPosition = new Position(0, 0);
         }
 
-        if (Planet.mars.isPositionExplored(landingPosition)) {
-            landingPosition = Planet.mars.nextFreePosition();
+        if (isPositionBusy(landingPosition)) {
+            landingPosition = nextFreePosition();
         }
 
         Integer id = landedProbes.size() + 1;
         Probe _newProbe = new Probe(id, newProbe.getDirection(), landingPosition);
         landedProbes.add(_newProbe);
-        Planet.mars.setLandedProbes(landedProbes);
-
-        return "Probe P" + _newProbe.getId() + " landed successfully!";
+        drawConsoleSurface();
+        return _newProbe;
     }
 
-    public static Optional<Probe> findProbeById(Integer id) {
+    public Optional<Probe> findProbeById(Integer id) {
 
         Optional<Probe> currentProbe = landedProbes.stream()
                 .filter(probe -> probe.getId() == id).findFirst();
@@ -109,53 +91,65 @@ public class Planet {
         return currentProbe;
     }
 
-    public static void saveProbe(Probe probe, ProbeCommand probeCommand) {
-        landedProbes.remove(probe);
+    public Probe spinProbe(Integer id, ProbeCommand probeCommand) {
 
-        if (!probeCommand.equals(ProbeCommand.MOVE)) {
-            probe.spin(probeCommand);
+        Optional<Probe> probeToSpin = this.findProbeById(id);
+
+        if (probeToSpin.isPresent()) {
+            Probe currentProbe = probeToSpin.get();
+            Direction newDirection = currentProbe.getNewDirection(probeCommand);
+            landedProbes.remove(currentProbe);
+            currentProbe = new Probe(id, newDirection, currentProbe.getPosition());
+            landedProbes.add(currentProbe);
+            drawConsoleSurface();
+            return currentProbe;
         }
 
-        if (probeCommand.equals(ProbeCommand.MOVE)) {
-            probe.move(landedProbes);
-        }
+        return null;
 
-        landedProbes.add(probe);
-        Planet.mars.setLandedProbes(landedProbes);
     }
 
-    public static List<Probe> getLandedProbes() {
+    public Probe moveProbe(Integer id) {
+
+        Optional<Probe> probeToSpin = this.findProbeById(id);
+
+        if (probeToSpin.isPresent()) {
+            Probe currentProbe = probeToSpin.get();
+            Position newPosition = currentProbe.getNewPosition();
+
+            if (isPositionBusy(newPosition)) {
+                logger.warn("[WARNING] Probe is already in this position: posX: " + newPosition.getX() + " posY: " + newPosition.getY());
+                return currentProbe;
+            }
+
+            landedProbes.remove(currentProbe);
+            currentProbe = new Probe(id, currentProbe.getDirection(), newPosition);
+            landedProbes.add(currentProbe);
+            drawConsoleSurface();
+            return currentProbe;
+        }
+
+        return null;
+    }
+
+    public List<Probe> getLandedProbes() {
         return landedProbes;
     }
 
-    public void drawSurface() {
-
-        this.toString();
-
-//        logger.info(this.toString());
-
-    }
-
-    @Override
-    public String toString() {
+    public void drawConsoleSurface() {
 
         logger.info("");
-        logger.info("Explored surface: " + exploredPercentage + "%");
 
         StringBuilder marsSurface = new StringBuilder();
 
-        for (Integer posY = sizeX - 1; posY > -1; posY--) {
+        for (Integer posY = SIZE_X - 1; posY > -1; posY--) {
 
             marsSurface = new StringBuilder();
 
-            for (Integer posX = 0; posX < sizeX; posX++) {
+            for (Integer posX = 0; posX < SIZE_X; posX++) {
 
                 String positionDraw = "====";
                 Position currentPosition = new Position(posX, posY);
-
-                if (exploredPositions.contains(currentPosition)) {
-                    positionDraw = "XXXX";
-                }
 
                 for (Probe probeOnSoil : landedProbes) {
                     if (currentPosition.equals(probeOnSoil.getPosition())) {
@@ -171,8 +165,6 @@ public class Planet {
         }
 
         logger.info("");
-
-        return marsSurface.toString();
     }
 
 }

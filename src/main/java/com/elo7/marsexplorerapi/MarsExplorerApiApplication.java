@@ -10,7 +10,7 @@ public class MarsExplorerApiApplication {
 	public static void main(String[] args) {
 
 		SpringApplication.run(MarsExplorerApiApplication.class, args);
-		Planet.mars.drawSurface();
+		Planet.mars.drawConsoleSurface();
 
 	}
 
