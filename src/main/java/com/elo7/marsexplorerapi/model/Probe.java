@@ -28,18 +28,43 @@ public class Probe {
         return id;
     }
 
-    public Position getNewPosition() {
+    public Probe move(Planet planet) {
 
-        Position newPosition = direction.getNewPosition(position.getX(), position.getY());
+        Position newPosition = position.getNewPosition(direction);
+
+        if (planet.isPositionBusy(newPosition)) {
+            logger.info("This position is busy: posX: " + newPosition.getX() + " posY: " + newPosition.getY());
+            return this;
+        }
+
+        position = newPosition;
         logger.info("Moving probe P" + id + " to new position: posX: " + newPosition.getX() + " posY: " + newPosition.getY());
-        return newPosition;
+        return this;
 
     }
 
-    public Direction getNewDirection(ProbeCommand probeCommand) {
+    public Probe spin(ProbeCommand probeCommand) {
 
+        direction = direction.getNewDirection(probeCommand);
         logger.info("Turn probe P" + id + " right... new direction: " + direction);
-        return direction.getNewDirection(probeCommand);
+        return this;
+
+    }
+
+    public Probe land(Planet planet) {
+
+        if (!planet.isPositionInAreaRange(position)) {
+            position = new Position(0, 0);
+        }
+
+        if (planet.isPositionBusy(position)) {
+            position = planet.nextFreePosition();
+        }
+
+        id = planet.nextProbeId();
+        planet.add(this);
+        planet.drawConsoleSurface();
+        return this;
 
     }
 }

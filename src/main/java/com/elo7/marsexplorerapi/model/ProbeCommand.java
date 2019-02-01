@@ -1,5 +1,5 @@
 package com.elo7.marsexplorerapi.model;
 
 public enum ProbeCommand {
-    LEFT, RIGHT, MOVE
+    L, R, M
 }

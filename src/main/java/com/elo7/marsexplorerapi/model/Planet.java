@@ -14,12 +14,15 @@ public class Planet {
     private static final Integer SIZE_Y = 5;
     public static final Planet mars = new Planet(SIZE_X, SIZE_Y);
 
-    private List<Position> positions = new ArrayList<>();
-    private List<Probe> landedProbes = new ArrayList<>();
+    private List<Position> positions;
+    private List<Probe> probes;
 
     Logger logger = LogManager.getLogger(this);
 
     public Planet(Integer sizeX, Integer sizeY) {
+
+        positions = new ArrayList<>();
+        probes = new ArrayList<>();
 
         for (int posY = 0; posY < sizeY; posY++) {
             for (int posX = 0; posX < sizeX; posX++) {
@@ -36,9 +39,15 @@ public class Planet {
 
     public List<Position> getBusyPositions() {
 
-        return landedProbes.stream().map(probes -> probes.getPosition())
+        List<Position> busyPositions = probes.stream()
+                .map(probes -> probes.getPosition())
                 .collect(Collectors.toList());
 
+        return busyPositions;
+    }
+
+    public List<Position> getPositions() {
+        return positions;
     }
 
     public List<Position> getFreePositions() {
@@ -49,9 +58,14 @@ public class Planet {
         return freePositions;
     }
 
+    public Integer nextProbeId() {
+        return probes.size() + 1;
+    }
+
     public boolean isPositionBusy(Position position) {
 
-        return getBusyPositions().contains(position);
+        List<Position> busyPositions = getBusyPositions();
+        return busyPositions.contains(position);
     }
 
     public Position nextFreePosition() {
@@ -64,83 +78,28 @@ public class Planet {
         return freePosition;
     }
 
-    public Probe landProbe(Probe newProbe) {
-
-        Position landingPosition = newProbe.getPosition();
-
-        if (!isPositionInAreaRange(landingPosition)) {
-            landingPosition = new Position(0, 0);
-        }
-
-        if (isPositionBusy(landingPosition)) {
-            landingPosition = nextFreePosition();
-        }
-
-        Integer id = landedProbes.size() + 1;
-        Probe _newProbe = new Probe(id, newProbe.getDirection(), landingPosition);
-        landedProbes.add(_newProbe);
-        drawConsoleSurface();
-        return _newProbe;
-    }
-
     public Optional<Probe> findProbeById(Integer id) {
 
-        Optional<Probe> currentProbe = landedProbes.stream()
+        Optional<Probe> currentProbe = probes.stream()
                 .filter(probe -> probe.getId() == id).findFirst();
 
         return currentProbe;
     }
 
-    public Probe spinProbe(Integer id, ProbeCommand probeCommand) {
-
-        Optional<Probe> probeToSpin = this.findProbeById(id);
-
-        if (probeToSpin.isPresent()) {
-            Probe currentProbe = probeToSpin.get();
-            Direction newDirection = currentProbe.getNewDirection(probeCommand);
-            landedProbes.remove(currentProbe);
-            currentProbe = new Probe(id, newDirection, currentProbe.getPosition());
-            landedProbes.add(currentProbe);
-            drawConsoleSurface();
-            return currentProbe;
-        }
-
-        return null;
-
+    public List<Probe> add(Probe probe) {
+        probes.add(probe);
+        return probes;
     }
 
-    public Probe moveProbe(Integer id) {
-
-        Optional<Probe> probeToSpin = this.findProbeById(id);
-
-        if (probeToSpin.isPresent()) {
-            Probe currentProbe = probeToSpin.get();
-            Position newPosition = currentProbe.getNewPosition();
-
-            if (isPositionBusy(newPosition)) {
-                logger.warn("[WARNING] Probe is already in this position: posX: " + newPosition.getX() + " posY: " + newPosition.getY());
-                return currentProbe;
-            }
-
-            landedProbes.remove(currentProbe);
-            currentProbe = new Probe(id, currentProbe.getDirection(), newPosition);
-            landedProbes.add(currentProbe);
-            drawConsoleSurface();
-            return currentProbe;
-        }
-
-        return null;
-    }
-
-    public List<Probe> getLandedProbes() {
-        return landedProbes;
+    public List<Probe> getProbes() {
+        return probes;
     }
 
     public void drawConsoleSurface() {
 
         logger.info("");
 
-        StringBuilder marsSurface = new StringBuilder();
+        StringBuilder marsSurface;
 
         for (Integer posY = SIZE_X - 1; posY > -1; posY--) {
 
@@ -151,7 +110,7 @@ public class Planet {
                 String positionDraw = "====";
                 Position currentPosition = new Position(posX, posY);
 
-                for (Probe probeOnSoil : landedProbes) {
+                for (Probe probeOnSoil : probes) {
                     if (currentPosition.equals(probeOnSoil.getPosition())) {
                         positionDraw = "P" + String.format("%02d", probeOnSoil.getId()) + probeOnSoil.getDirection();
                         continue;

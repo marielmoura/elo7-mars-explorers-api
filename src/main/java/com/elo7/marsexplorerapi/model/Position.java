@@ -24,4 +24,32 @@ public class Position {
                 && this.Y.equals(((Position) obj).Y));
     }
 
+    public Position getNewPosition(Direction direction) {
+
+        Integer newPosX = X;
+        Integer newPosY = Y;
+
+        switch (direction) {
+            case W: {
+                newPosX = X > 0 ? X - 1 : 0;
+                break;
+            }
+            case S: {
+                newPosY = Y > 0 ? Y - 1 : 0;
+                break;
+            }
+            case E: {
+                newPosX++;
+                break;
+            }
+            case N: {
+                newPosY++;
+                break;
+            }
+        }
+
+        return new Position(newPosX, newPosY);
+    }
+
+
 }

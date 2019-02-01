@@ -1,28 +1,35 @@
 package com.elo7.marsexplorerapi.controller;
 
-import com.elo7.marsexplorerapi.model.Planet;
-import com.elo7.marsexplorerapi.model.Probe;
-import com.elo7.marsexplorerapi.model.ProbeCommand;
+import com.elo7.marsexplorerapi.model.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/probes")
 public class ProbeController {
 
     @GetMapping()
-    public List<Probe> get() {
+    public PlanetActionResponse getLandedProbes() {
 
-        return Planet.mars.getLandedProbes();
+        PlanetActionResponse mars = new PlanetActionResponse(Planet.mars.getProbes(), Planet.mars.getPositions());
+        return mars;
 
     }
 
     @PostMapping()
-    public Probe landNewProbe(@RequestBody Probe newProbe) {
+    public PlanetActionResponse land(@RequestBody ProbeRequest probeRequest) {
         try {
 
-            return Planet.mars.landProbe(newProbe);
+            Probe probe = probeRequest.toProbe();
+            probe.land(Planet.mars);
+            PlanetActionResponse mars = new PlanetActionResponse(Planet.mars.getProbes(), Planet.mars.getPositions());
+            return mars;
+
 
         } catch (Exception ex) {
 
@@ -31,11 +38,26 @@ public class ProbeController {
         }
     }
 
-    @PutMapping("/{id}/spin/right")
-    public Probe spinProbeRight(@PathVariable("id") Integer id) {
+    @PutMapping("/{id}")
+    public PlanetActionResponse setAction(@PathVariable("id") Integer id, @RequestBody ActionRequest request) {
         try {
 
-            return Planet.mars.spinProbe(id, ProbeCommand.RIGHT);
+            Optional<Probe> probe = Planet.mars.findProbeById(id);
+
+            if (probe.isPresent()) {
+                Probe currentProbe = probe.get();
+
+                if (request.getAction() == ProbeCommand.R || request.getAction() == ProbeCommand.L) {
+                    currentProbe.spin(request.getAction());
+                }
+                if (request.getAction() == ProbeCommand.M) {
+                    currentProbe.move(Planet.mars);
+                }
+
+            }
+
+            PlanetActionResponse mars = new PlanetActionResponse(Planet.mars.getProbes(), Planet.mars.getPositions());
+            return mars;
 
         } catch (Exception ex) {
 
@@ -43,32 +65,84 @@ public class ProbeController {
 
         }
     }
+}
 
-    @PutMapping("/{id}/spin/left")
-    public Probe spinProbeLeft(@PathVariable("id") Integer id) {
-        try {
+class ProbeRequest {
 
-            return Planet.mars.spinProbe(id, ProbeCommand.LEFT);
+    private Position position;
+    private Direction direction;
 
-        } catch (Exception ex) {
-
-            throw ex;
-
-        }
-
+    Probe toProbe() {
+        return new Probe(0, direction, position);
     }
 
-    @PutMapping("/{id}/move")
-    public Probe moveProbe(@PathVariable("id") Integer id) {
-        try {
+    public Position getPosition() {
+        return position;
+    }
 
-            return Planet.mars.moveProbe(id);
+    public Direction getDirection() {
+        return direction;
+    }
+}
 
-        } catch (Exception ex) {
+class ActionRequest {
 
-            throw ex;
+    private ProbeCommand action;
 
+    public ProbeCommand getAction() {
+        return action;
+    }
+}
+
+class PlanetActionResponse {
+
+    PlanetActionResponse(List<Probe> probes, List<Position> positions) {
+
+        for (Position position : positions) {
+            PositionResponse positionResponse = new PositionResponse(position.getX(), position.getY());
+            for (Probe probe : probes) {
+                if (probe.getPosition().equals(position)) {
+                    positionResponse.setProbe(probe);
+                }
+            }
+
+            surface.add(positionResponse);
         }
     }
 
+    private List<PositionResponse> surface = new ArrayList<>();
+
+    public List<PositionResponse> getSurface() {
+        return surface;
+    }
+}
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+class PositionResponse {
+
+    private Integer x;
+    private Integer y;
+    private Probe probe;
+
+    PositionResponse(Integer x, Integer y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public Integer getX() {
+        return x;
+    }
+
+    public Integer getY() {
+        return y;
+    }
+
+    public Probe getProbe() {
+        return probe;
+    }
+
+    Probe setProbe(Probe probe) {
+        this.probe = probe;
+        return probe;
+    }
 }

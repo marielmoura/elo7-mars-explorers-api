@@ -2,17 +2,12 @@ package com.elo7.marsexplorerapi.model;
 
 public enum Direction {
     N {
-        public Position getNewPosition(Integer posX, Integer posY) {
-            posY++;
-            return new Position(posX, posY);
-        }
-
         public Direction getNewDirection(ProbeCommand command) {
-            if (ProbeCommand.RIGHT.equals(command)) {
+            if (ProbeCommand.R.equals(command)) {
                 return E;
             }
 
-            if (ProbeCommand.LEFT.equals(command)) {
+            if (ProbeCommand.L.equals(command)) {
                 return W;
             }
 
@@ -20,18 +15,13 @@ public enum Direction {
         }
     },
     E {
-        public Position getNewPosition(Integer posX, Integer posY) {
-            posX++;
-            return new Position(posX, posY);
-        }
-
         public Direction getNewDirection(ProbeCommand command) {
 
-            if (ProbeCommand.RIGHT.equals(command)) {
+            if (ProbeCommand.R.equals(command)) {
                 return S;
             }
 
-            if (ProbeCommand.LEFT.equals(command)) {
+            if (ProbeCommand.L.equals(command)) {
                 return N;
             }
 
@@ -39,17 +29,12 @@ public enum Direction {
         }
     },
     S {
-        public Position getNewPosition(Integer posX, Integer posY) {
-            posY = posY > 0 ? posY - 1 : 0;
-            return new Position(posX, posY);
-        }
-
         public Direction getNewDirection(ProbeCommand command) {
-            if (ProbeCommand.RIGHT.equals(command)) {
+            if (ProbeCommand.R.equals(command)) {
                 return W;
             }
 
-            if (ProbeCommand.LEFT.equals(command)) {
+            if (ProbeCommand.L.equals(command)) {
                 return E;
             }
 
@@ -57,17 +42,12 @@ public enum Direction {
         }
     },
     W {
-        public Position getNewPosition(Integer posX, Integer posY) {
-            posX = posX > 0 ? posX - 1 : 0;
-            return new Position(posX, posY);
-        }
-
         public Direction getNewDirection(ProbeCommand command) {
-            if (ProbeCommand.RIGHT.equals(command)) {
+            if (ProbeCommand.R.equals(command)) {
                 return N;
             }
 
-            if (ProbeCommand.LEFT.equals(command)) {
+            if (ProbeCommand.L.equals(command)) {
                 return S;
             }
 
@@ -75,6 +55,5 @@ public enum Direction {
         }
     };
 
-    public abstract Position getNewPosition(Integer posX, Integer posY);
     public abstract Direction getNewDirection(ProbeCommand probeCommand);
 }
