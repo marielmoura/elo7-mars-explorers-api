@@ -3,11 +3,18 @@ package com.elo7.marsexplorerapi.model;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.persistence.*;
+
+@Entity
 public class Probe {
 
+    @Id
+    @GeneratedValue(strategy= GenerationType.AUTO)
     private Integer id;
     private Direction direction;
     private Position position;
+
+    @Transient
     private Logger logger = LogManager.getLogger(this);
 
     public Probe(Integer id, Direction direction, Position position) {

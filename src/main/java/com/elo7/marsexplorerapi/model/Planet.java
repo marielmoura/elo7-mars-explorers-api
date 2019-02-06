@@ -3,18 +3,28 @@ package com.elo7.marsexplorerapi.model;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Entity
 public class Planet {
 
+    @Id
+    @GeneratedValue(strategy= GenerationType.AUTO)
+    private Long id;
+
+    @Transient
     private static final Integer SIZE_X = 5;
     private static final Integer SIZE_Y = 5;
     public static final Planet mars = new Planet(SIZE_X, SIZE_Y);
 
+    @Transient
     private List<Position> positions;
+
+    @Transient
     private List<Probe> probes;
 
     Logger logger = LogManager.getLogger(this);

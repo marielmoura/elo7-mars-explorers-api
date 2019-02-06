@@ -1,7 +1,6 @@
 package com.elo7.marsexplorerapi.controller;
 
 import com.elo7.marsexplorerapi.model.*;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,6 +11,13 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/probes")
 public class ProbeController {
+
+//    private final PlanetRepository dao;
+//
+//    @Autowired
+//    ProbeController(PlanetRepository dao){
+//        this.dao = dao;
+//    }
 
     @GetMapping()
     public PlanetActionResponse getLandedProbes() {
